@@ -28,6 +28,7 @@ export class FireFlyListener {
     this.connected = new Promise<void>(resolve => {
       this.ws.on('open', resolve);
       this.ws.on('message', (data: string) => {
+        console.log(`got a new message in web socket ${JSON.parse(data)}`)
         this.messages.push(JSON.parse(data));
       });
     });
@@ -63,8 +64,12 @@ export class FireFly {
     this.rest = axios.create({ baseURL: `http://localhost:${port}/api/v1` });
   }
 
-  async sendBroadcast(data: FireFlyData[]) {
+  async sendBroadcastDeprecated(data: FireFlyData[]) {
     await this.rest.post(`/namespaces/${this.ns}/broadcast/message`, { data });
+  }
+
+  async sendBroadcast(data: FireFlyData[]) {
+    await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, {data});
   }
 
   retrieveData(data: FireFlyDataIdentifier[]) {
