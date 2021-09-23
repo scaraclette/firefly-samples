@@ -28,7 +28,7 @@ export class FireFlyListener {
     this.connected = new Promise<void>(resolve => {
       this.ws.on('open', resolve);
       this.ws.on('message', (data: string) => {
-        console.log(`got a new message in web socket ${JSON.parse(data)}`)
+        console.log(`Got a new message in web socket with id: ${JSON.parse(data).id}`)
         this.messages.push(JSON.parse(data));
       });
     });
@@ -46,13 +46,21 @@ export class FireFlyListener {
     const expire = Date.now() + timeout;
     while (Date.now() < expire) {
       for (const message of this.messages) {
+        console.log(`Current messages stored: ${this.messages.length}`)
         if (message.type === type) {
-          return message;
+          let messageReturn = message;
+          this.messages.pop();
+          console.log(`Current messages stored after pop: ${this.messages.length}`)
+          return messageReturn;
         }
       }
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     return undefined;
+  }
+
+  public get get_messages() {
+    return this.messages;
   }
 }
 

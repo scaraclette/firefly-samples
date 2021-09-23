@@ -1,6 +1,5 @@
 import { FireFly, FireFlyListener, FireFlyData } from "./firefly";
-// const TIMEOUT = 15 * 1000;
-const TIMEOUT = 15 * 10000;
+const TIMEOUT = 15 * 1000;
 const dataValues = (data: FireFlyData[]) => data.map(d => d.value);
 
 async function main() {
@@ -10,22 +9,37 @@ async function main() {
   const ws2 = new FireFlyListener(5001);
   await ws1.ready();
   await ws2.ready();
-
-  console.log("-----------DEPRECATED TEST BROADCAST MESSAGE-----------");
-  console.log("note: deprecated broadcast route");
-  await broadcast_send_deprecated(firefly1, firefly2, ws2);
-
-  console.log("-----------TEST BROADCAST MESSAGE NEW ROUTE-----------");
-  await broadcast_send(firefly1, firefly2, ws2);
+  
+  // Test broadcast function
+  // test_broadcast_send(firefly1, firefly2, ws2);
+  
 
   ws1.close();
   ws2.close();
 }
 
-async function broadcast_send(f1: FireFly, f2: FireFly, ws2: FireFlyListener) {
+async function test_broadcast_send(firefly1: FireFly, firefly2: FireFly, ws2: FireFlyListener) {
+  let total_time = 0;
+  let total_elements = 0;
+  for (let i = 0; i < 10; i++) {
+    console.log(`-----------${i} TEST BROADCAST MESSAGE NEW ROUTE-----------`);
+    total_time += await broadcast_send(firefly1, firefly2, ws2, i.toString());
+    total_elements++;
+  }
+  console.log(`Average time to broadcast: ${total_time/total_elements}`);
+}
+
+/**
+ * Function uses updated broadcast route: /namespaces/${this.ns}/messages/broadcast
+ * @param f1 
+ * @param f2 
+ * @param ws2 
+ * @param message 
+ */
+async function broadcast_send(f1: FireFly, f2: FireFly, ws2: FireFlyListener, message: String): Promise<number> {
   const sendData: FireFlyData[] = [
-    {value: 'Deno'},
-    {value: 'Orange Cat Deno'}
+    {value: `A - ${message}`},
+    {value: `B - ${message}`}
   ]
 
   console.log(`Broadcasting data values from firefly1: ${dataValues(sendData)}`);
@@ -33,28 +47,38 @@ async function broadcast_send(f1: FireFly, f2: FireFly, ws2: FireFlyListener) {
   // Let firefly1 send broadcast
   await f1.sendBroadcast(sendData);
 
+  const start = Date.now();
   const receivedMessage = await ws2.firstMessageOfType('message_confirmed', TIMEOUT);
-  console.log(`receivedMessage: ${JSON.stringify(receivedMessage, null, 2)}`);
+  const stop = Date.now();
+  const elapsedTime = (stop-start)/1000;
+  console.log(`Elapsed time broadcast message to get received by ws2: ${elapsedTime} seconds`);
+
   if (receivedMessage === undefined) {
     throw new Error('No message received');
   }
 
   const receivedData = await f2.retrieveData(receivedMessage.message.data);
   console.log(`Received data value on firefly2: ${dataValues(receivedData)}`);
+
+  return elapsedTime
 }
 
+/**
+ * This function uses deprecated broadcast route
+ * @param f1 
+ * @param f2 
+ * @param ws2 
+ */
 async function broadcast_send_deprecated(f1: FireFly, f2: FireFly, ws2: FireFlyListener) {
   const sendData: FireFlyData[] = [
-    {value: '[DEPRECATED] m1'},
-    {value: '[DEPRECATED] m2'}
+    {value: '[DEPRECATED] deno cat m1'},
+    {value: '[DEPRECATED] deno cat m2'}
   ]
 
   console.log(`Broadcasting data values from firefly1: ${dataValues(sendData)}`);
 
-  // Let firefly1 send broadcast
   await f1.sendBroadcastDeprecated(sendData);
-  
-  // TODO: what are different message types? We are currently using message confirmed
+
   const receivedMessage = await ws2.firstMessageOfType('message_confirmed', TIMEOUT);
   console.log(`receivedMessage: ${JSON.stringify(receivedMessage, null, 2)}`);
   if (receivedMessage === undefined) {
