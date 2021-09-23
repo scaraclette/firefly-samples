@@ -77,6 +77,7 @@ export class FireFly {
   }
 
   async sendBroadcast(data: FireFlyData[]) {
+    console.log(`Data to send ${JSON.stringify(data)}`);
     await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, {data});
   }
 

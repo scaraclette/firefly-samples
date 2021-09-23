@@ -1,7 +1,15 @@
 import { FireFly, FireFlyListener, FireFlyData } from "./firefly";
+import util from 'util';
 const TIMEOUT = 15 * 1000;
 const dataValues = (data: FireFlyData[]) => data.map(d => d.value);
 
+/**
+ * Implementation TODOs:
+ * 1. Broadcast [DONE]
+ * 2. Send private message
+ * 3. Send private blob
+ * 4. Send broadcast blob
+ */
 async function main() {
   const firefly1 = new FireFly(5000);
   const firefly2 = new FireFly(5001);
@@ -10,9 +18,13 @@ async function main() {
   await ws1.ready();
   await ws2.ready();
   
-  // Test broadcast function
+  // Test simple hello world
+  await broadcast_send(firefly1, firefly2, ws2, "hello");
+
+  // Test multiple broadcast function
   // test_broadcast_send(firefly1, firefly2, ws2);
-  
+
+  // Test private message send
 
   ws1.close();
   ws2.close();
@@ -52,7 +64,7 @@ async function broadcast_send(f1: FireFly, f2: FireFly, ws2: FireFlyListener, me
   const stop = Date.now();
   const elapsedTime = (stop-start)/1000;
   console.log(`Elapsed time broadcast message to get received by ws2: ${elapsedTime} seconds`);
-
+  console.log(`received message: ${util.inspect(receivedMessage, {depth: null})}`);
   if (receivedMessage === undefined) {
     throw new Error('No message received');
   }
