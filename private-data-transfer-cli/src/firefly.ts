@@ -5,6 +5,21 @@ export interface FireFlyData {
   value: string;
 }
 
+export interface FireFlyDataCustom {
+  id: String;
+  name: String;
+}
+
+export interface FireFlyHeader {
+  tag: String;
+  topics: String[];
+}
+
+export interface FireFlyTopicBroadcast {
+  header: FireFlyHeader,
+  data: FireFlyDataCustom[]
+}
+
 export interface FireFlyDataIdentifier {
   id: string;
   hash: string;
@@ -18,7 +33,7 @@ export interface FireFlyMessage {
   }
 }
 
-export class FireFlyListener {
+export class FireFlyListenerWebsocket {
   private ws: WebSocket;
   private connected: Promise<void>;
   private messages: FireFlyMessage[] = [];
@@ -55,6 +70,13 @@ export class FireFlyListener {
   }
 }
 
+/**
+ * TODO: how to initialize webhook?
+ */
+export class FireFlyWebhook {
+  
+}
+
 export class FireFly {
   private rest: AxiosInstance;
   private ns = 'default';
@@ -63,8 +85,17 @@ export class FireFly {
     this.rest = axios.create({ baseURL: `http://localhost:${port}/api/v1` });
   }
 
-  async sendBroadcast(data: FireFlyData[]) {
+  async sendBroadcastDeprecated(data: FireFlyData[]) {
     await this.rest.post(`/namespaces/${this.ns}/broadcast/message`, { data });
+  }
+
+  async sendBroadcast(data: FireFlyData[]) {
+    await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, { data });
+  }
+
+  async sendBroadcastTopic(data: FireFlyTopicBroadcast) {
+    console.log(`Data to send: ${JSON.stringify(data)}`);
+    await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, { data });
   }
 
   retrieveData(data: FireFlyDataIdentifier[]) {
