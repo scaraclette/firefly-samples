@@ -6,8 +6,10 @@ export interface FireFlyData {
 }
 
 export interface FireFlyDataCustom {
-  id: String;
-  name: String;
+  value: {
+    id: String;
+    name: String;
+  }
 }
 
 export interface FireFlyHeader {
@@ -90,6 +92,7 @@ export class FireFly {
   }
 
   async sendBroadcast(data: FireFlyData[]) {
+    console.log(`Data to send: ${JSON.stringify(data)}`);
     await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, { data });
   }
 

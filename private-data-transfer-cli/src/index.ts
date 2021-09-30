@@ -3,7 +3,7 @@ import { FireFly, FireFlyListenerWebsocket, FireFlyData, FireFlyDataCustom, Fire
 const TIMEOUT = 15 * 1000;
 
 const dataValues = (data: FireFlyData[]) => data.map(d => d.value);
-const dataValuesCustom = (data: FireFlyDataCustom[]) => data.map(d => d.id)
+const dataValuesCustom = (data: FireFlyDataCustom[]) => data.map(d => d.value)
 
 async function main() {
   const firefly1 = new FireFly(5000);
@@ -14,7 +14,7 @@ async function main() {
   await ws2.ready();
 
   // Send public broadcast
-  // await publicBroadcast(firefly1, firefly2, ws2);
+  await publicBroadcast(firefly1, firefly2, ws2);
   await publicTopicBroadcast(firefly1, firefly2, ws2);
   
   ws1.close();
@@ -23,10 +23,16 @@ async function main() {
 
 async function publicTopicBroadcast(firefly1: FireFly, firefly2: FireFly, ws2: FireFlyListenerWebsocket) {
   // Create data to send
-  const sendData: FireFlyDataCustom[] = [
-    {id: "widget_id_123", name: "superwidget"},
-    {id: "widget_id_456", name: "basicwidget"}
-  ]
+  // const sendData: FireFlyDataCustom[] = [
+  //   {id: "widget_id_123", name: "superwidget"},
+  //   {id: "widget_id_456", name: "basicwidget"}
+  // ]
+
+  const sendDataAny: FireFlyDataCustom[] =
+  [
+    {value: {id: "topic_A",name: "Some topic...A"}},
+    {value: {id: "topic_B",name: "Some topic...B"}}
+  ];
 
   // Initialize header with tag and topic
   const header: FireFlyHeader = {
@@ -36,10 +42,10 @@ async function publicTopicBroadcast(firefly1: FireFly, firefly2: FireFly, ws2: F
 
   const broadcastMessage: FireFlyTopicBroadcast = {
     header: header,
-    data: sendData
+    data: sendDataAny
   }
 
-  console.log(`Broadcasting data values from firefly1: ${dataValuesCustom(sendData)}`);
+  console.log(`Broadcasting data values from firefly1: ${dataValuesCustom(sendDataAny)}`);
   await firefly1.sendBroadcastTopic(broadcastMessage);
 
   const receivedMessage = await ws2.firstMessageOfType('message_confirmed', TIMEOUT);
