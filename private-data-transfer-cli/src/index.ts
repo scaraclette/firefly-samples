@@ -28,7 +28,7 @@ async function main() {
   ws2.close();
 }
 
-// TODO: form data for blob?
+// TODO: Upload blob
 async function broadcastBlob() {
   // Get data
   let request: AxiosResponse = await axios({
@@ -38,7 +38,8 @@ async function broadcastBlob() {
   });
 
   let bodyFormData = new FormData();
-  bodyFormData.append('firefly.png', request.data);
+  // What are needed for posting blobs?
+  bodyFormData.append('data', request.data);
   bodyFormData.append('autometa', 'true');
 
   // let upload = await axios({
