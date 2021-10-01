@@ -63,7 +63,7 @@ export class FireFlyListenerWebsocket {
     while (Date.now() < expire) {
       for (const message of this.messages) {
         if (message.type === type) {
-          return message;
+          return this.messages.pop();
         }
       }
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -96,9 +96,9 @@ export class FireFly {
     await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, { data });
   }
 
-  async sendBroadcastTopic(data: FireFlyTopicBroadcast) {
+  async sendBroadcastTopic(data: FireFlyDataCustom[], header: FireFlyHeader) {
     console.log(`Data to send: ${JSON.stringify(data)}`);
-    await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, { data });
+    await this.rest.post(`/namespaces/${this.ns}/messages/broadcast`, { header: header, data: data });
   }
 
   retrieveData(data: FireFlyDataIdentifier[]) {

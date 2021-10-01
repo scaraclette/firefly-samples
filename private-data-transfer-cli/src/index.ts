@@ -1,4 +1,6 @@
-import { FireFly, FireFlyListenerWebsocket, FireFlyData, FireFlyDataCustom, FireFlyHeader, FireFlyTopicBroadcast } from "./firefly";
+import { FireFly, FireFlyListenerWebsocket, FireFlyData, FireFlyDataCustom, FireFlyHeader } from "./firefly";
+import axios, { AxiosResponse } from 'axios';
+import FormData from "form-data";
 
 const TIMEOUT = 15 * 1000;
 
@@ -13,21 +15,45 @@ async function main() {
   await ws1.ready();
   await ws2.ready();
 
-  // Send public broadcast
-  await publicBroadcast(firefly1, firefly2, ws2);
-  await publicTopicBroadcast(firefly1, firefly2, ws2);
+  // Send broadcast without topic
+  // await publicBroadcast(firefly1, firefly2, ws2);
+
+  // Send broadcast with topic
+  // await publicTopicBroadcast(firefly1, firefly2, ws2);
+
+  // TODO: send blob broadcast
+  await broadcastBlob();
   
   ws1.close();
   ws2.close();
 }
 
+// TODO: form data for blob?
+async function broadcastBlob() {
+  // Get data
+  let request: AxiosResponse = await axios({
+    url: 'https://github.com/hyperledger/firefly/raw/main/docs/firefly_logo.png',
+    method: 'GET',
+    responseType: 'blob'
+  });
+
+  let bodyFormData = new FormData();
+  bodyFormData.append('firefly.png', request.data);
+  bodyFormData.append('autometa', 'true');
+
+  // let upload = await axios({
+  //   method: 'POST',
+  //   url: 'http://localhost:5000/api/v1/namespaces/default/data',
+  //   data: bodyFormData,
+  //   headers: {'Content-Type':'multipart/form-data'},
+  // });
+  let res = await axios.post('http://localhost:5000/api/v1/namespaces/default/data', bodyFormData, {headers: bodyFormData.getHeaders()});
+
+  console.log(res);
+}
+
 async function publicTopicBroadcast(firefly1: FireFly, firefly2: FireFly, ws2: FireFlyListenerWebsocket) {
   // Create data to send
-  // const sendData: FireFlyDataCustom[] = [
-  //   {id: "widget_id_123", name: "superwidget"},
-  //   {id: "widget_id_456", name: "basicwidget"}
-  // ]
-
   const sendDataAny: FireFlyDataCustom[] =
   [
     {value: {id: "topic_A",name: "Some topic...A"}},
@@ -40,13 +66,8 @@ async function publicTopicBroadcast(firefly1: FireFly, firefly2: FireFly, ws2: F
     topics: ["widget_id_12345"]
   }
 
-  const broadcastMessage: FireFlyTopicBroadcast = {
-    header: header,
-    data: sendDataAny
-  }
-
   console.log(`Broadcasting data values from firefly1: ${dataValuesCustom(sendDataAny)}`);
-  await firefly1.sendBroadcastTopic(broadcastMessage);
+  await firefly1.sendBroadcastTopic(sendDataAny, header);
 
   const receivedMessage = await ws2.firstMessageOfType('message_confirmed', TIMEOUT);
   if (receivedMessage === undefined) {
