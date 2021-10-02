@@ -1,6 +1,7 @@
 import { FireFly, FireFlyListenerWebsocket, FireFlyData, FireFlyDataCustom, FireFlyHeader } from "./firefly";
 import axios, { AxiosResponse } from 'axios';
 import FormData from "form-data";
+import fs from 'fs';
 
 const TIMEOUT = 15 * 1000;
 
@@ -39,8 +40,8 @@ async function broadcastBlob() {
 
   let bodyFormData = new FormData();
   // What are needed for posting blobs?
-  bodyFormData.append('data', request.data);
   bodyFormData.append('autometa', 'true');
+  bodyFormData.append('data', request.data);
 
   // let upload = await axios({
   //   method: 'POST',

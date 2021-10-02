@@ -1,0 +1,24 @@
+{
+  "name": "webhooks-example",
+  "description": "Sample FireFly application demonstrating a simple data transfer using webhooks",
+  "devDependencies": {
+    "@types/node": "^16.10.2",
+    "typescript": "^4.4.3"
+  },
+  "scripts": {
+    "clean": "rimraf ./build",
+    "build": "npm run clean && tsc",
+    "start": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyperledger/firefly-samples.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/hyperledger/firefly-samples/issues"
+  },
+  "homepage": "https://github.com/hyperledger/firefly-samples#readme"
+}
