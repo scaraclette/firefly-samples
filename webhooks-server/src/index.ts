@@ -19,6 +19,7 @@ app.post('/subscribe-firefly', (req, res) => {
 // TODO: endpoint to unsubscribe to firefly
 app.post('/unsubscribe-firefly', (req, res) => {
     // Accept subscription name
+    // TODO: delete with endpoint /
 });
 
 // TODO: endpoint to register webhook URI
