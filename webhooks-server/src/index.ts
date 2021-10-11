@@ -5,6 +5,7 @@ import { SubscribeFireflyPost } from './types/firefly';
 const app = express();
 const port = 8080;
 const firefly1 = new FireFly(5000);
+const subscriptionIDMap = new Map<String, String>();
 
 app.use(express.json());
 
@@ -20,14 +21,22 @@ app.get('/', (req: any, res) => {
 // TODO: endpoint to subscribe to firefly
 // Takes in name and designates it to URL 
 app.post('/subscribe-firefly', async (req: Request, res: Response) => {
-    // TODO: accept subscription name to subscribe
+    // Accept subscription name to subscribe
     let requestBody: SubscribeFireflyPost = req.body;
-    console.log(requestBody);
+    if (requestBody.subscriptionName === undefined || subscriptionIDMap.has(requestBody.subscriptionName)) {
+        console.log('Subscription name already exists or is undefined!');
+        res.sendStatus(400);
+    }
 
     // Send subscription request
-    let subscribe = await firefly1.subscribeWebhook(requestBody);
-    console.log(subscribe);
+    let subscriptionRequest = await firefly1.subscribeWebhook(requestBody);
+    if (subscriptionRequest === undefined) {
+        console.log('Error creating subscription!');
+        res.sendStatus(400);
+    }
 
+    subscriptionIDMap.set(requestBody.subscriptionName, subscriptionRequest.data.id);
+    console.log(`Subscription created!\nNamespace: ${subscriptionRequest.data.namespace}\nSubscription name: ${requestBody.subscriptionName}\nSubscription ID: ${subscriptionRequest.data.id}`);
     res.sendStatus(200);
 });
 

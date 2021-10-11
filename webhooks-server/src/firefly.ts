@@ -21,11 +21,11 @@ export class FireFly {
         }
         console.log(`SUBSCRIPTION INFORMATION: ${JSON.stringify(subscriptionInformation)}`);
         try {
-            const res = await this.rest.post(`/namespaces/${namespace}/subscriptions`, subscriptionInformation);
-            
+            const res = await this.rest.post(`/namespaces/${namespace}/subscriptions`, subscriptionInformation); 
             return res.data;
         } catch (err) {
             console.error(err.message);
+            return undefined;
         }
     }
 }
