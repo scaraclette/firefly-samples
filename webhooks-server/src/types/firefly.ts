@@ -3,7 +3,7 @@ export interface SubscribeFireflyPost {
     subscriptionName: String;
 }
 
-export interface SubscribeFireflyEndpoint {
+export interface SubscribeFirefly {
     name: String;
     options: {
         url: String;
