@@ -6,7 +6,7 @@ const app= express();
 const port = 8080;
 
 const firefly1: FireFly = new FireFly(5000);
-const subscriptionName: String = 'webhook_server_subscription';
+const subscriptionName: String = 'firefly_webhook_subscription';
 
 app.use(express.json());
 
@@ -50,6 +50,8 @@ app.get('/unsubscribe-firefly', async (req: Request, res: Response) => {
 // Endpoint to receive firefly webhook
 app.post('/webhook-firefly', (req: Request, res: Response) => {
     console.log(req.body);
+
+    res.send(`Endpoint called`);
 });
 
 app.listen(port, () => {
