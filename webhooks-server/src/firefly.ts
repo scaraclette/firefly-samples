@@ -1,20 +1,26 @@
 import axios, { AxiosInstance } from "axios";
-import { SubscribeFirefly } from "./types/firefly";
+
+export interface SubscribeFirefly {
+    name: String;
+    options: {
+        url: String;
+    };
+    transport: String;
+}
 
 export class FireFly {
     private rest: AxiosInstance;
     private url: String = 'http://localhost:8080/webhook-firefly';
     private transport: String = 'webhooks';
     private namespace: String = 'default';
-    private subscriptionName: String = 'subscription_test';
 
     constructor(port: number) {
         this.rest = axios.create({ baseURL: `http://localhost:${port}/api/v1` });
     }
 
-    async subscribeWebhook(): Promise<any> {
+    async subscribeWebhook(subscriptionName: String): Promise<any> {
         let newSubscriptionRequest: SubscribeFirefly = {
-            name: this.subscriptionName,
+            name: subscriptionName,
             options: {
                 url: this.url
             },
@@ -22,6 +28,16 @@ export class FireFly {
         }
         try {
             const res = await this.rest.post(`/namespaces/${this.namespace}/subscriptions`, newSubscriptionRequest); 
+            return res.data;
+        } catch (err) {
+            console.error(err.message);
+            return undefined;
+        }
+    }
+
+    async unsubscribeWebhook(subscriptionId: String): Promise<any> {
+        try {
+            const res = await this.rest.delete(`/namespaces/${this.namespace}/subscriptions/${subscriptionId}`); 
             return res.data;
         } catch (err) {
             console.error(err.message);
@@ -38,4 +54,5 @@ export class FireFly {
             return undefined;
         }
     }
+
 }

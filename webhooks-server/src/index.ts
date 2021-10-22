@@ -1,32 +1,31 @@
 import express from 'express';
 import {Request, Response} from 'express';
 import { FireFly } from './firefly';
-const app = express();
+
+const app= express();
 const port = 8080;
-const firefly1 = new FireFly(5000);
+
+const firefly1: FireFly = new FireFly(5000);
+const subscriptionName: String = 'webhook_server_subscription';
 
 app.use(express.json());
 
-
 app.get('/', (req: any, res) => {
-    // TODO: go to different endpoints
     res.send('Endpoints\nGET /subscribe-firefly\nGET /unsubscribe-firefly\nPOST /webhook-firefly');
 });
 
-// TODO: endpoint to subscribe to firefly
-// Takes in name and designates it to URL 
+// Endpoint to subscribe to firefly
 app.get('/subscribe-firefly', async (req: Request, res: Response) => {
-    // Subscribe to firefly
-    let subscribe = await firefly1.subscribeWebhook();
+    let subscribe = await firefly1.subscribeWebhook(subscriptionName);
     if (subscribe === undefined) {
-        res.status(500).send("Subscription already created!");
+        res.status(500).send('Error occurred or subscription already created!');
         return;
     }
-    console.log(`New subscription created: ${JSON.stringify(subscribe, null, 2)}`);
-    res.status(200).send("Subscription created!");
+    
+    res.status(200).send(`Subscription created!`);
 });
 
-// TODO: endpoint to unsubscribe to firefly
+// Endpoint to unsubscribe to firefly
 app.get('/unsubscribe-firefly', async (req: Request, res: Response) => {
     // Get subscription list
     let subscriptionList = await firefly1.getSubscriptions();
@@ -34,20 +33,21 @@ app.get('/unsubscribe-firefly', async (req: Request, res: Response) => {
         res.status(500).send("Error getting subscription list");
         return;
     }
-    console.log(`Subscription list: ${JSON.stringify(subscriptionList, null, 2)}`);
 
-    let toUnsubscribe = subscriptionList.find((obj: { name: string; }) => obj.name === "test_1");
-    if (toUnsubscribe === undefined) {
-        res.status(404).send("No subscription created!");
+    // Find subscription
+    let subscription = subscriptionList.find((obj: { name: string; }) => obj.name === subscriptionName);
+    if (subscription === undefined) {
+        res.status(404).send(`Subscription ${subscriptionName} was never created!`);
         return;
     }
-    // TODO
-    console.log(`Subscription to remove: ${JSON.stringify(toUnsubscribe, null, 2)}`);
 
-    res.status(200).send("TODO: unsubscribe");
+    // Unsubscribe from the subscription ID
+    await firefly1.unsubscribeWebhook(subscription["id"]);
+
+    res.status(200).send(`Successfuly unsubscribed ${subscriptionName}`);
 });
 
-// TODO: endpoint to register webhook URI
+// Endpoint to receive firefly webhook
 app.post('/webhook-firefly', (req: Request, res: Response) => {
     console.log(req.body);
 });
